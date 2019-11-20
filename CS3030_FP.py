@@ -3,7 +3,6 @@ import pickle
 import numpy
 import sys
 import os
-import numba
 from numba import jit
 import datetime
 import threading
@@ -64,7 +63,7 @@ class Database:
     def writeEncoding(self,encoding, performer='RyanReynolds'):
         with open(f'{performer}.fr') as f:
             pickle.dump(encoding, f)
-        
+
 
 class FaceDetector:
     # constructor
@@ -72,42 +71,46 @@ class FaceDetector:
     # self.database is where queries are made regarding faces
     def __init__(self):
         pass
-  
+
     # Accept an image and an encoding, then compares them
+    @jit(nopython=True)
     def Identify(self,img, enc):
         loc = frm.face_locations(img)
         t_enc = frm.face_encodings(img, loc)
         if True in frm.compare_faces(t_enc,enc):
             return True
         return False
-    
+
+
 class Main:
     def __init__(self):
         self.running = True
         self.c_thread = None
+        self.numFrames = 0
         self.debug_list = []                                     # TBD: removed later. this is for debugging purposes
     def programStart(self):
         self.c_thread = threading.Thread(target=self.clock)      # c_thread to count program run time
         self.c_thread.start()                                                # c_thread
         video = Video('testclip.mp4')                            # load video
         dbase = Database()                                       # load database
-        faceDet = FaceDetector()                                 # 
-        
+        faceDet = FaceDetector()                                 #
         testEnc = dbase.readEncoding()
         s_frames = []
         # get frames at a sample rate of 1 frame per 50
         while (video.getSampleFrame(50)):
+            self.numFrames = self.numFrames + 1
             img = video.currentFrame
+            cv2.imwrite(f'debugImages/image{self.numFrames}.png',img)       # tbd: remove later
             self.debug_list.append((faceDet.Identify(img, testEnc)))
         self.programEnd()
-        
-        
     # runs at end of programStart() to release resources
     def programEnd(self):
         self.running = False                                            # ends run condition in c_thread while loop
         self.c_thread.join()                                                 # c_thread joins main thread
-        deb_log = open('debug.txt', 'w')    # TBD: remove later 
-        deb_log.write(str(self.debug_list)) # TBD: remove later
+        deb_log = open('debug.txt', 'w')    # TBD: remove later
+        for example in self.debug_list:
+            deb_log.write(f'{example}\n')       # TBD: remove later
+        #deb_log.write(str(self.debug_list)) # TBD: remove later
         deb_log.close()                     # TBD: remove later
         print('Program End')                                            # end message
     # prints and counts the time elapsed for the program
@@ -117,7 +120,5 @@ class Main:
             time.sleep(1)
             seconds += 1
             print(f'Time Elapsed ({seconds})')
-            
-          
 main = Main()
 main.programStart()
