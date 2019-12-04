@@ -1,9 +1,6 @@
 import face_recognition as frm
 import pickle
 import numpy
-import sys
-import os
-import datetime
 import threading
 import time
 import cv2
@@ -41,7 +38,7 @@ class Video:
         if not frame_read:
             self.video.release()
         return frame_read
-    
+
     # counts number of frames of the video. then reloads the video
     # Note: do NOT use this in the middle of normal operations
     #       Use this before or after what you're trying to do. Not in the middle.
@@ -93,10 +90,8 @@ class FaceDetector:
 
             if not found:
                 known_encs.append(enc)
-            else:
-                found = False
 
-        return (unknown_encs, found_encs)
+        return unknown_encs, found_encs
 
     # Accept an image and an encoding, then compares them
     def identify(self, img, enc):
