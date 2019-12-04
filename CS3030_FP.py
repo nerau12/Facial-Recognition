@@ -12,6 +12,8 @@ from PIL import Image
 # this class captures video from a file on initialization
 # getFrame method sets the current frame global variable to the next frame then returns true/false
 #   true/false indicates if there was a next frame (false if image is None)
+
+
 class Video:
     # constructor
     def __init__(self, videoPath):
@@ -19,12 +21,14 @@ class Video:
         self.videoPath = videoPath
         self.video = cv2.VideoCapture(self.videoPath)
     # places next frame in self.video and returns true or false if an image was found
+
     def getFrame(self):
         frameRead, self.currentFrame = self.video.read()
         if not frameRead:
             self.video.release()
         return frameRead
     # closes video.
+
     def forceClose(self):
         self.video.release()
 
@@ -40,6 +44,7 @@ class Video:
     # counts number of frames of the video. then reloads the video
     # Note: do NOT use this in the middle of normal operations
     #       Use this before or after what you're trying to do. Not in the middle.
+
     def countFrames(self):
         count = 0
         while self.getFrame():
@@ -47,16 +52,20 @@ class Video:
         self.video = cv2.VideoCapture(self.videoPath)
         return count
 
+
 # read/write, organize, and manage all data.
 class Database:
     def __init__(self):
         pass
+
     def readEncoding(self, performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
             return numpy.array(pickle.load(f))
+
     def writeEncoding(self,encoding, performer='RyanReynolds'):
         with open(f'{performer}.fr') as f:
             pickle.dump(encoding, f)
+
 
 class FaceDetector:
     # empty constructor
@@ -64,6 +73,7 @@ class FaceDetector:
         pass
     # compares all known encodings to all encodings in an image
     # returns a tuple of unknown encodings and found encodings
+
     def FindAll(self, img, knownEncs):
         allEncs = frm.face_encodings(img)
         foundEncs = []
@@ -71,16 +81,16 @@ class FaceDetector:
         found = False
         # check all encodings
         for enc in allEncs:
-            # checko known encodings
+            # check known encodings
             for known in knownEncs:
                 result = frm.compare_faces([known], enc)
-                #result = self.Identify([known], enc)
                 # a known encoding was found. so append to found and then break out of loop
                 if True in result[0]:
                     foundEncs.append(known)
                     found = True
                     break
             # if nothing was found then add to list of unknown encodings
+
             if found == False:
                 knownEncs.append(enc)
             else:
@@ -96,6 +106,7 @@ class FaceDetector:
             return True
         return False
 
+
 class Main:
     def __init__(self):
         self.running = True
@@ -103,7 +114,8 @@ class Main:
         self.numFrames = 0
         self.video = Video('testclip.mp4')                                       # load video
         self.dbase = Database()                                                  # load database
-        self.faceDet = FaceDetector()                                            #
+        self.faceDet = FaceDetector()#
+
     def programStart(self):
         self.c_thread = threading.Thread(target=self.clock)                 # c_thread to count program run time
         self.c_thread.start()                                               # c_thread
@@ -116,17 +128,22 @@ class Main:
             results = self.faceDet.FindAll(img, testEnc)
 
         self.programEnd()
+
     # runs at end of programStart() to release resources
     def programEnd(self):
         self.running = False                                                # ends run condition in c_thread while loop
         self.c_thread.join()                                                # c_thread joins main thread
         print('Program End')                                                # end message
+
     # prints and counts the time elapsed for the program
     def clock(self):
         seconds = 0
-        while(self.running):
+
+        while self.running:
             time.sleep(1)
             seconds += 1
             print(f'Time Elapsed ({seconds})')
+
+
 main = Main()
 main.programStart()
