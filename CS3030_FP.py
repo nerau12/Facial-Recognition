@@ -3,7 +3,6 @@ import pickle
 import numpy
 import sys
 import os
-from numba import jit
 import datetime
 import threading
 import time
@@ -47,11 +46,6 @@ class Video:
             count += 1
         self.video = cv2.VideoCapture(self.videoPath)
         return count
-    
-    def getTime(self):
-        pass
-    #self.video.
-        #CV_CAP_PROP_POS_MSEC 
 
 # read/write, organize, and manage all data.
 class Database:
@@ -64,55 +58,69 @@ class Database:
         with open(f'{performer}.fr') as f:
             pickle.dump(encoding, f)
 
-
 class FaceDetector:
-    # constructor
-    # self.frame is where we're trying to ID faces
-    # self.database is where queries are made regarding faces
+    # empty constructor
     def __init__(self):
         pass
+    # compares all known encodings to all encodings in an image
+    # returns a tuple of unknown encodings and found encodings
+    def FindAll(self, img, knownEncs):
+        allEncs = frm.face_encodings(img)
+        foundEncs = []
+        unknownEncs = []
+        found = False
+        # check all encodings
+        for enc in allEncs:
+            # checko known encodings
+            for known in knownEncs:
+                result = frm.compare_faces([known], enc)
+                #result = self.Identify([known], enc)
+                # a known encoding was found. so append to found and then break out of loop
+                if True in result[0]:
+                    foundEncs.append(known)
+                    found = True
+                    break
+            # if nothing was found then add to list of unknown encodings
+            if found == False:
+                knownEncs.append(enc)
+            else:
+                found = False
+        return (unknownEncs, foundEncs)
 
     # Accept an image and an encoding, then compares them
-    @jit(nopython=True)
     def Identify(self,img, enc):
         loc = frm.face_locations(img)
         t_enc = frm.face_encodings(img, loc)
+        #t_enc = img
         if True in frm.compare_faces(t_enc,enc):
             return True
         return False
-
 
 class Main:
     def __init__(self):
         self.running = True
         self.c_thread = None
         self.numFrames = 0
-        self.debug_list = []                                     # TBD: removed later. this is for debugging purposes
+        self.video = Video('testclip.mp4')                                       # load video
+        self.dbase = Database()                                                  # load database
+        self.faceDet = FaceDetector()                                            #
     def programStart(self):
-        self.c_thread = threading.Thread(target=self.clock)      # c_thread to count program run time
-        self.c_thread.start()                                                # c_thread
-        video = Video('testclip.mp4')                            # load video
-        dbase = Database()                                       # load database
-        faceDet = FaceDetector()                                 #
-        testEnc = dbase.readEncoding()
-        s_frames = []
+        self.c_thread = threading.Thread(target=self.clock)                 # c_thread to count program run time
+        self.c_thread.start()                                               # c_thread
+
+        testEnc = [self.dbase.readEncoding()]
         # get frames at a sample rate of 1 frame per 50
-        while (video.getSampleFrame(50)):
+        while (self.video.getSampleFrame(50)):
             self.numFrames = self.numFrames + 1
-            img = video.currentFrame
-            cv2.imwrite(f'debugImages/image{self.numFrames}.png',img)       # tbd: remove later
-            self.debug_list.append((faceDet.Identify(img, testEnc)))
+            img = self.video.currentFrame
+            results = self.faceDet.FindAll(img, testEnc)
+
         self.programEnd()
     # runs at end of programStart() to release resources
     def programEnd(self):
-        self.running = False                                            # ends run condition in c_thread while loop
-        self.c_thread.join()                                                 # c_thread joins main thread
-        deb_log = open('debug.txt', 'w')    # TBD: remove later
-        for example in self.debug_list:
-            deb_log.write(f'{example}\n')       # TBD: remove later
-        #deb_log.write(str(self.debug_list)) # TBD: remove later
-        deb_log.close()                     # TBD: remove later
-        print('Program End')                                            # end message
+        self.running = False                                                # ends run condition in c_thread while loop
+        self.c_thread.join()                                                # c_thread joins main thread
+        print('Program End')                                                # end message
     # prints and counts the time elapsed for the program
     def clock(self):
         seconds = 0
