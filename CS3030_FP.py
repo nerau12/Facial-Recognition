@@ -20,31 +20,31 @@ class Video:
         self.currentFrame = None
         self.videoPath = video_path
         self.video = cv2.VideoCapture(self.videoPath)
-    # places next frame in self.video and returns true or false if an image was found
 
+    # places next frame in self.video and returns true or false if an image was found
     def get_frame(self):
         frame_read, self.currentFrame = self.video.read()
         if not frame_read:
             self.video.release()
         return frame_read
-    # closes video.
 
+    # closes video.
     def force_close(self):
         self.video.release()
 
     # returns 1 frame spaced apart by the sample rate.
     # This should be used when paired with facial recognition and not used as the default.
     # returns True/False
-    def get_sample_frame(self, sample_rate = 1):
-        for i in range(0,sample_rate):
-            frameRead, self.currentFrame = self.video.read()
-        if not frameRead:
+    def get_sample_frame(self, sample_rate=1):
+        for i in range(0, sample_rate):
+            frame_read, self.currentFrame = self.video.read()
+        if not frame_read:
             self.video.release()
-        return frameRead
+        return frame_read
+    
     # counts number of frames of the video. then reloads the video
     # Note: do NOT use this in the middle of normal operations
     #       Use this before or after what you're trying to do. Not in the middle.
-
     def count_frames(self):
         count = 0
         while self.get_frame():
@@ -71,9 +71,9 @@ class FaceDetector:
     # empty constructor
     def __init__(self):
         pass
+
     # compares all known encodings to all encodings in an image
     # returns a tuple of unknown encodings and found encodings
-
     def find_all(self, img, known_encs):
         all_encs = frm.face_encodings(img)
         found_encs = []
@@ -121,7 +121,7 @@ class Main:
         self.c_thread.start()                                               # c_thread
 
         test_enc = [self.data_base.read_encoding()]
-        
+
         # get frames at a sample rate of 1 frame per 50
         while self.video.get_sample_frame(50):
             self.numFrames = self.numFrames + 1
