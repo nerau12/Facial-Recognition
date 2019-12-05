@@ -4,7 +4,6 @@ import numpy
 import threading
 import time
 import cv2
-from PIL import Image
 # pip install dlib==19.7.0, make sure that dlib is version 19.7, otherwise there are problems
 # this class captures video from a file on initialization
 # getFrame method sets the current frame global variable to the next frame then returns true/false
@@ -49,6 +48,11 @@ class Video:
         self.video = cv2.VideoCapture(self.videoPath)
         return count
 
+    def get_timestamps(self):
+        milliseconds = self.video.get(cv2.CAP_PROP_POS_MSEC)
+        seconds = milliseconds/1000
+        return seconds
+
 
 # read/write, organize, and manage all data.
 class Database:
@@ -78,16 +82,18 @@ class FaceDetector:
         found = False
         # check all encodings
         for enc in all_encs:
+
             # check known encodings
             for known in known_encs:
                 result = frm.compare_faces([known], enc)
+
                 # a known encoding was found. so append to found and then break out of loop
                 if True in result[0]:
                     found_encs.append(known)
                     found = True
                     break
-            # if nothing was found then add to list of unknown encodings
 
+            # if nothing was found then add to list of unknown encodings
             if not found:
                 known_encs.append(enc)
 
@@ -97,8 +103,9 @@ class FaceDetector:
     def identify(self, img, enc):
         loc = frm.face_locations(img)
         t_enc = frm.face_encodings(img, loc)
-        if True in frm.compare_faces(t_enc,enc):
+        if True in frm.compare_faces(t_enc, enc):
             return True
+
         return False
 
 
@@ -109,7 +116,7 @@ class Main:
         self.numFrames = 0
         self.video = Video('testclip.mp4')                                       # load video
         self.data_base = Database()                                                  # load database
-        self.faceDet = FaceDetector()#
+        self.faceDet = FaceDetector()                                                #
 
     def program_start(self):
         self.c_thread = threading.Thread(target=self.clock)                 # c_thread to count program run time
@@ -119,9 +126,11 @@ class Main:
 
         # get frames at a sample rate of 1 frame per 50
         while self.video.get_sample_frame(50):
-            self.numFrames = self.numFrames + 1
+            self.numFrames += 1
             img = self.video.currentFrame
             results = self.faceDet.find_all(img, test_enc)
+            timestamps = self.video.get_timestamps()
+            print(timestamps)
 
         self.program_end()
 
