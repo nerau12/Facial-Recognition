@@ -89,6 +89,15 @@ class Database:
         with open("log.txt", 'a') as log_file:
             log_file.write("name: " + name + " time: " + str(timestamp) + " secs\n")
 
+    def insert_into_output_file(self, unknown, known, timestamps):
+        if len(unknown) != 0:
+            self.insert_into_table('unknown', timestamps)
+            self.log_file('unknown', timestamps)
+
+        elif len(known) != 0:
+            self.insert_into_table("Ryan Reynolds", timestamps)
+            self.log_file('Ryan Reynolds', timestamps)
+
     @staticmethod
     def read_encoding(performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
@@ -113,9 +122,9 @@ class FaceDetector:
         found_encs = []
         unknown_encs = []
         found = False
+
         # check all encodings
         for enc in all_encs:
-
             # check known encodings
             for known in known_encs:
                 result = frm.compare_faces([known], enc)
@@ -163,14 +172,7 @@ class Main:
             img = self.video.currentFrame
             unknown, known = self.faceDet.find_all(img, test_enc)
             timestamps = self.video.get_timestamps()
-
-            if unknown:
-                self.data_base.insert_into_table('unknown', timestamps)
-                self.data_base.log_file('unknown', timestamps)
-
-            elif known:
-                self.data_base.insert_into_table("Ryan Reynolds", timestamps)
-                self.data_base.log_file('Ryan Reynolds', timestamps)
+            self.data_base.insert_into_output_file(unknown, known, timestamps)
 
         self.program_end()
 
