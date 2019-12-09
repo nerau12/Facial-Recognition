@@ -130,9 +130,6 @@ class FaceDetector:
             if not found:
                 unknown_encs.append(enc)
 
-            else:
-                found = False
-
         return unknown_encs, found_encs
 
     # Accept an image and an encoding, then compares them
@@ -169,11 +166,11 @@ class Main:
 
             if unknown:
                 self.data_base.insert_into_table('unknown', timestamps)
-                self.data_base.log_file('unknown',timestamps)
+                self.data_base.log_file('unknown', timestamps)
 
             elif known:
                 self.data_base.insert_into_table("Ryan Reynolds", timestamps)
-                self.data_base.log_file('Ryan Reynolds',timestamps)
+                self.data_base.log_file('Ryan Reynolds', timestamps)
 
         self.program_end()
 
