@@ -74,7 +74,7 @@ class Database:
 
     def execute(self, sql, params=None):
         self.cursor.execute(sql, params or ())
-    
+
     # create face table
     def create_table(self):
         self.execute('CREATE TABLE faces(name VARCHAR, time_stamp TIMESTAMP)')
@@ -84,15 +84,18 @@ class Database:
         self.execute('INSERT INTO faces(name,timestamp) VALUES(?,?)'(name, timestamp))
 
     # add face to log file
-    def log_file(self,name,timestamp):
+    @staticmethod
+    def log_file(name, timestamp):
         with open("log.txt", 'a') as log_file:
             log_file.write("name" + name + "time" + timestamp)
 
-    def read_encoding(self, performer='RyanReynolds'):
+    @staticmethod
+    def read_encoding(performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
             return numpy.array(pickle.load(f))
 
-    def write_encoding(self, encoding, performer='RyanReynolds'):
+    @staticmethod
+    def write_encoding(encoding, performer='RyanReynolds'):
         with open(f'{performer}.fr') as f:
             pickle.dump(encoding, f)
 
@@ -104,7 +107,8 @@ class FaceDetector:
 
     # compares all known encodings to all encodings in an image
     # returns a tuple of unknown encodings and found encodings
-    def find_all(self, img, known_encs):
+    @staticmethod
+    def find_all(img, known_encs):
         all_encs = frm.face_encodings(img)
         found_encs = []
         unknown_encs = []
@@ -132,7 +136,8 @@ class FaceDetector:
         return unknown_encs, found_encs
 
     # Accept an image and an encoding, then compares them
-    def identify(self, img, enc):
+    @staticmethod
+    def identify(img, enc):
         loc = frm.face_locations(img)
         t_enc = frm.face_encodings(img, loc)
         if True in frm.compare_faces(t_enc, enc):
