@@ -72,6 +72,9 @@ class Database:
     def commit(self):
         self.connection.commit()
 
+    def execute(self, sql, params=None):
+        self.cursor.execute(sql, params or ())
+
     def read_encoding(self, performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
             return numpy.array(pickle.load(f))
