@@ -5,9 +5,6 @@ import threading
 import time
 import cv2
 import sqlite3
-import os
-
-
 # pip install dlib==19.7.0, make sure that dlib is version 19.7, otherwise there are problems
 # this class captures video from a file on initialization
 # getFrame method sets the current frame global variable to the next frame then returns true/false
