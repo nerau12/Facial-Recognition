@@ -77,7 +77,9 @@ class Database:
 
     # create face table
     def create_table(self):
-        self.execute('CREATE TABLE faces(name VARCHAR, time_stamp TIMESTAMP)')
+        self.execute('''DROP TABLE IF EXISTS faces                                          # drop the table if exists
+                        CREATE TABLE faces(name VARCHAR, time_stamp TIMESTAMP)              # create the table
+                        ''')
 
     # insert face into the database
     def insert_into_table(self, name, timestamp):
