@@ -4,6 +4,10 @@ import numpy
 import threading
 import time
 import cv2
+import sqlite3
+import os
+
+
 # pip install dlib==19.7.0, make sure that dlib is version 19.7, otherwise there are problems
 # this class captures video from a file on initialization
 # getFrame method sets the current frame global variable to the next frame then returns true/false
@@ -48,16 +52,28 @@ class Video:
         self.video = cv2.VideoCapture(self.videoPath)
         return count
 
+    # gets timestamps for each frame
     def get_timestamps(self):
         milliseconds = self.video.get(cv2.CAP_PROP_POS_MSEC)
-        seconds = milliseconds/1000
+        seconds = milliseconds / 1000
         return seconds
 
 
 # read/write, organize, and manage all data.
 class Database:
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        self._conn = sqlite3.connect(name)
+        self._cursor = self._conn.cursor()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.commit()
+        self.connection.close()
+
+    def commit(self):
+        self.connection.commit()
 
     def read_encoding(self, performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
@@ -97,6 +113,9 @@ class FaceDetector:
             if not found:
                 known_encs.append(enc)
 
+            else:
+                found = False
+
         return unknown_encs, found_encs
 
     # Accept an image and an encoding, then compares them
@@ -113,20 +132,18 @@ class Main:
     def __init__(self):
         self.running = True
         self.c_thread = None
-        self.numFrames = 0
-        self.video = Video('testclip.mp4')                                       # load video
-        self.data_base = Database()                                                  # load database
-        self.faceDet = FaceDetector()                                                #
+        self.video = Video('testclip.mp4')  # load video
+        self.data_base = Database("test.db")  # load database
+        self.faceDet = FaceDetector()  #
 
     def program_start(self):
-        self.c_thread = threading.Thread(target=self.clock)                 # c_thread to count program run time
-        self.c_thread.start()                                               # c_thread
+        self.c_thread = threading.Thread(target=self.clock)  # c_thread to count program run time
+        self.c_thread.start()  # c_thread
 
         test_enc = [self.data_base.read_encoding()]
 
         # get frames at a sample rate of 1 frame per 50
         while self.video.get_sample_frame(50):
-            self.numFrames += 1
             img = self.video.currentFrame
             results = self.faceDet.find_all(img, test_enc)
             timestamps = self.video.get_timestamps()
@@ -136,9 +153,9 @@ class Main:
 
     # runs at end of programStart() to release resources
     def program_end(self):
-        self.running = False                                                # ends run condition in c_thread while loop
-        self.c_thread.join()                                                # c_thread joins main thread
-        print('Program End')                                                # end message
+        self.running = False  # ends run condition in c_thread while loop
+        self.c_thread.join()  # c_thread joins main thread
+        print('Program End')  # end message
 
     # prints and counts the time elapsed for the program
     def clock(self):
