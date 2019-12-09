@@ -74,6 +74,19 @@ class Database:
 
     def execute(self, sql, params=None):
         self.cursor.execute(sql, params or ())
+    
+    # create face table
+    def create_table(self):
+        self.execute('CREATE TABLE faces(name VARCHAR, time_stamp TIMESTAMP)')
+
+    # insert face into the database
+    def insert_into_table(self, name, timestamp):
+        self.execute('INSERT INTO faces(name,timestamp) VALUES(?,?)'(name, timestamp))
+
+    # add face to log file
+    def log_file(self,name,timestamp):
+        with open("log.txt", 'a') as log_file:
+            log_file.write("name" + name + "time" + timestamp)
 
     def read_encoding(self, performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
