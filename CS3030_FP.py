@@ -73,23 +73,21 @@ class Database:
         self.connection.commit()
 
     def execute(self, sql, params=None):
-        self.cursor.execute(sql, params or ())
+        self._cursor.execute(sql, params or ())
 
     # create face table
     def create_table(self):
-        self.execute('''DROP TABLE IF EXISTS faces                                          # drop the table if exists
-                        CREATE TABLE faces(name VARCHAR, time_stamp TIMESTAMP)              # create the table
-                        ''')
+        self.execute('CREATE TABLE IF NOT EXISTS faces(name VARCHAR(255), time_stamp TIMESTAMP)')
 
     # insert face into the database
     def insert_into_table(self, name, timestamp):
-        self.execute('INSERT INTO faces(name,timestamp) VALUES(?,?)', (name, timestamp))
+        self.execute('INSERT INTO faces(name,time_stamp) VALUES(?,?)', (name, timestamp))
 
     # add face to log file
     @staticmethod
     def log_file(name, timestamp):
         with open("log.txt", 'a') as log_file:
-            log_file.write("name" + name + "time" + timestamp)
+            log_file.write("name: " + name + " time: " + str(timestamp) + " secs\n")
 
     @staticmethod
     def read_encoding(performer='RyanReynolds'):
@@ -161,12 +159,21 @@ class Main:
         self.c_thread.start()  # c_thread
 
         test_enc = [self.data_base.read_encoding()]
+        self.data_base.create_table()
 
         # get frames at a sample rate of 1 frame per 50
         while self.video.get_sample_frame(50):
             img = self.video.currentFrame
             unknown, known = self.faceDet.find_all(img, test_enc)
             timestamps = self.video.get_timestamps()
+
+            if unknown:
+                self.data_base.insert_into_table('unknown', timestamps)
+                self.data_base.log_file('unknown',timestamps)
+
+            elif known:
+                self.data_base.insert_into_table("Ryan Reynolds", timestamps)
+                self.data_base.log_file('Ryan Reynolds',timestamps)
 
         self.program_end()
 
