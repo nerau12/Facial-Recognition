@@ -81,7 +81,7 @@ class Database:
 
     # insert face into the database
     def insert_into_table(self, name, timestamp):
-        self.execute('INSERT INTO faces(name,timestamp) VALUES(?,?)'(name, timestamp))
+        self.execute('INSERT INTO faces(name,timestamp) VALUES(?,?)', (name, timestamp))
 
     # add face to log file
     @staticmethod
@@ -128,7 +128,7 @@ class FaceDetector:
 
             # if nothing was found then add to list of unknown encodings
             if not found:
-                known_encs.append(enc)
+                unknown_encs.append(enc)
 
             else:
                 found = False
@@ -163,9 +163,8 @@ class Main:
         # get frames at a sample rate of 1 frame per 50
         while self.video.get_sample_frame(50):
             img = self.video.currentFrame
-            results = self.faceDet.find_all(img, test_enc)
+            unknown, known = self.faceDet.find_all(img, test_enc)
             timestamps = self.video.get_timestamps()
-            print(timestamps)
 
         self.program_end()
 
