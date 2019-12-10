@@ -10,7 +10,6 @@ import sqlite3
 # getFrame method sets the current frame global variable to the next frame then returns true/false
 #   true/false indicates if there was a next frame (false if image is None)
 
-
 class Video:
     # constructor
     def __init__(self, video_path):
@@ -127,7 +126,7 @@ class FaceDetector:
         for enc in all_encs:
             # check known encodings
             for known in known_encs:
-                result = frm.compare_faces([known], enc)
+                result = frm.compare_faces([known], enc,tolerance=0.00055)
 
                 # a known encoding was found. so append to found and then break out of loop
                 if True in result[0]:
@@ -138,14 +137,15 @@ class FaceDetector:
             # if nothing was found then add to list of unknown encodings
             if not found:
                 unknown_encs.append(enc)
-
+            else:
+                found = False
         return unknown_encs, found_encs
 
     # Accept an image and an encoding, then compares them
     @staticmethod
     def identify(img, enc):
-        loc = frm.face_locations(img)
-        t_enc = frm.face_encodings(img, loc)
+        loc = frm.face_locations(img)                           # get face locations from image
+        t_enc = frm.face_encodings(img, loc)                    # get encodings from locations
         if True in frm.compare_faces(t_enc, enc):
             return True
 
@@ -161,36 +161,31 @@ class Main:
         self.faceDet = FaceDetector()  #
 
     def program_start(self):
-        self.c_thread = threading.Thread(target=self.clock)  # c_thread to count program run time
+        self.c_thread = threading.Thread(target=self.clock)     # c_thread to count program run time
         self.c_thread.start()  # c_thread
 
         test_enc = [self.data_base.read_encoding()]
         self.data_base.create_table()
-
         # get frames at a sample rate of 1 frame per 50
-        while self.video.get_sample_frame(50):
+        while self.video.get_sample_frame(30):
             img = self.video.currentFrame
             unknown, known = self.faceDet.find_all(img, test_enc)
             timestamps = self.video.get_timestamps()
             self.data_base.insert_into_output_file(unknown, known, timestamps)
-
         self.program_end()
 
     # runs at end of programStart() to release resources
     def program_end(self):
-        self.running = False  # ends run condition in c_thread while loop
-        self.c_thread.join()  # c_thread joins main thread
-        print('Program End')  # end message
+        self.running = False                                    # ends run condition in c_thread while loop
+        self.c_thread.join()                                    # c_thread joins main thread
+        print('Program End')                                    # end message
 
     # prints and counts the time elapsed for the program
     def clock(self):
         seconds = 0
-
         while self.running:
             time.sleep(1)
             seconds += 1
             print(f'Time Elapsed ({seconds})')
-
-
 main = Main()
 main.program_start()
