@@ -10,6 +10,7 @@ import sqlite3
 # getFrame method sets the current frame global variable to the next frame then returns true/false
 #   true/false indicates if there was a next frame (false if image is None)
 
+
 class Video:
     # constructor
     def __init__(self, video_path):
