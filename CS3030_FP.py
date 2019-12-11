@@ -69,9 +69,11 @@ class Database:
         self.commit()
         self.connection.close()
 
+    # commit entries to the database
     def commit(self):
         self.connection.commit()
 
+    # execute sql code
     def execute(self, sql, params=None):
         self._cursor.execute(sql, params or ())
 
@@ -90,6 +92,7 @@ class Database:
         with open("log.txt", 'a') as log_file:
             log_file.write("name found: " + name + " time found: " + str(timestamp) + " secs\n")
 
+    # insert into log and database
     def insert_into_output_file(self, unknown, known, timestamps):
         if len(unknown) != 0:
             self.insert_into_table('unknown', timestamps)
@@ -99,11 +102,13 @@ class Database:
             self.insert_into_table("Ryan Reynolds", timestamps)
             self.log_file('Ryan Reynolds', timestamps)
 
+    # read from frame file
     @staticmethod
     def read_encoding(performer='RyanReynolds'):
         with open(f'{performer}.fr', 'rb') as f:
             return numpy.array(pickle.load(f))
 
+    # write encoding to file
     @staticmethod
     def write_encoding(encoding, performer='RyanReynolds'):
         with open(f'{performer}.fr') as f:
@@ -162,6 +167,7 @@ class Main:
         self.data_base = Database("test.db")  # load database
         self.faceDet = FaceDetector()  #
 
+    # start the program
     def program_start(self):
         self.c_thread = threading.Thread(target=self.clock)     # c_thread to count program run time
         self.c_thread.start()  # c_thread
