@@ -76,7 +76,8 @@ class Database:
 
     # create face table
     def create_table(self):
-        self.execute('CREATE TABLE IF NOT EXISTS faces(name VARCHAR(255), time_stamp TIMESTAMP)')
+        self.execute('DROP TABLE IF EXISTS faces')
+        self.execute('CREATE TABLE faces(name VARCHAR(255), time_stamp TIMESTAMP)')
 
     # insert face into the database
     def insert_into_table(self, name, timestamp):
@@ -86,7 +87,7 @@ class Database:
     @staticmethod
     def log_file(name, timestamp):
         with open("log.txt", 'a') as log_file:
-            log_file.write("name: " + name + " time: " + str(timestamp) + " secs\n")
+            log_file.write("name found: " + name + " time found: " + str(timestamp) + " secs\n")
 
     def insert_into_output_file(self, unknown, known, timestamps):
         if len(unknown) != 0:
@@ -126,7 +127,7 @@ class FaceDetector:
         for enc in all_encs:
             # check known encodings
             for known in known_encs:
-                result = frm.compare_faces([known], enc,tolerance=0.00055)
+                result = frm.compare_faces([known], enc, tolerance=0.00055)
 
                 # a known encoding was found. so append to found and then break out of loop
                 if True in result[0]:
