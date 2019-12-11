@@ -187,5 +187,7 @@ class Main:
             time.sleep(1)
             seconds += 1
             print(f'Time Elapsed ({seconds})')
+
+
 main = Main()
 main.program_start()
