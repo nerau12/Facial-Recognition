@@ -1,7 +1,7 @@
 asn1crypto==0.24.0
 certifi==2018.1.18
 Click==7.0
-cryptography==2.1.4
+cryptography==2.3
 Django==1.11.26
 djangorestframework==3.9.4
 dlib==19.18.0
