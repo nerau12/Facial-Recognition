@@ -3,7 +3,7 @@ certifi==2018.1.18
 Click==7.0
 cryptography==2.8
 Django==1.11.26
-djangorestframework==3.9.4
+djangorestframework==3.11.2
 dlib==19.18.0
 enum34==1.1.6
 face-recognition==1.2.3
