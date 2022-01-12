@@ -15,7 +15,7 @@ keyrings.alt==3.0
 numpy==1.17.4
 opencv-python==4.1.2.30
 Pillow==6.2.1
-pipenv==2018.11.26
+pipenv==2022.1.8
 pycrypto==2.6.1
 pygobject==3.26.1
 pytz==2018.3
